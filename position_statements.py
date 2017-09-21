@@ -40,6 +40,18 @@ def parse_value(value):
             }
         }
 
+def expanded_datavalue(datavalue):
+    if datavalue['type'] == 'wikibase-entityid':
+        entity = pywikibot.ItemPage(repo, datavalue['value']['id'])
+        entity.get()
+        return entity
+    elif datavalue['type'] == 'string':
+        return datavalue['value']
+    elif datavalue['type'] == 'time':
+        time = pywikibot.WbTime.fromTimestr(datavalue['value']['time'])
+        time.precision = datavalue['value']['precision']
+        return time
+
 if len(sys.argv) == 1:
     sys.exit("Usage: %s <filename>" % sys.argv[0])
 
@@ -73,4 +85,21 @@ for statement in statements:
     # TODO: Validate that items start with Q and properties start with P
     commands.append(command)
 
-print(commands)
+for command in commands:
+    # Get the item we want to modify
+    item = pywikibot.ItemPage(repo, command['item'])
+    item.get()
+
+    # Get the claim we're dealing with
+    claim = pywikibot.Claim(site, command['property'])
+
+    # Create a new P39 statement pointing to Q123
+    claim.setTarget(expanded_datavalue(command['datavalue']))
+
+    # Add the claim to the item.
+    item.addClaim(claim)
+
+    for qualifier in command['qualifiers']:
+        qualifier_claim = pywikibot.Claim(site, qualifier['property'], isQualifier=True)
+        qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
+        claim.addQualifier(qualifier_claim)
