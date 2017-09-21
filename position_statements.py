@@ -6,7 +6,11 @@ from pathlib import Path
 # Regular expressions copied from http://tinyurl.com/yb37xlu7
 item_re = re.compile('^[PQ]\d+$', re.IGNORECASE)
 string_re = re.compile('^"(.*)"$', re.IGNORECASE)
-time_re = re.compile('^([+-]{0,1})(\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)Z\/{0,1}(\d*)$', re.IGNORECASE)
+time_re = re.compile(
+    '^([+-]{0,1})(\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)Z\/{0,1}(\d*)$',
+    re.IGNORECASE
+)
+
 
 def entity_type(value):
     if value.startswith('Q'):
@@ -16,12 +20,19 @@ def entity_type(value):
     else:
         return 'unknown'
 
+
 def parse_value(value):
     value = value.strip()
 
     m = item_re.match(value)
     if m is not None:
-        return {'type': 'wikibase-entityid', 'value': { 'entity-type': entity_type(value), 'id': value.upper()}}
+        return {
+            'type': 'wikibase-entityid',
+            'value': {
+                'entity-type': entity_type(value),
+                'id': value.upper()
+            }
+        }
 
     m = string_re.match(value)
     if m is not None:
@@ -40,6 +51,7 @@ def parse_value(value):
             }
         }
 
+
 def expanded_datavalue(datavalue):
     if datavalue['type'] == 'wikibase-entityid':
         entity = pywikibot.ItemPage(repo, datavalue['value']['id'])
@@ -51,6 +63,7 @@ def expanded_datavalue(datavalue):
         time = pywikibot.WbTime.fromTimestr(datavalue['value']['time'])
         time.precision = datavalue['value']['precision']
         return time
+
 
 if len(sys.argv) == 1:
     sys.exit("Usage: %s <filename>" % sys.argv[0])
@@ -81,7 +94,8 @@ for statement in statements:
     qualifier_pairs = list(zip(qualifiers[::2], qualifiers[1::2]))
     command['qualifiers'] = []
     for p, v in qualifier_pairs:
-        command['qualifiers'].append({'property': p, 'datavalue': parse_value(v)})
+        q = {'property': p, 'datavalue': parse_value(v)}
+        command['qualifiers'].append(q)
     # TODO: Validate that items start with Q and properties start with P
     commands.append(command)
 
@@ -100,6 +114,8 @@ for command in commands:
     item.addClaim(claim)
 
     for qualifier in command['qualifiers']:
-        qualifier_claim = pywikibot.Claim(site, qualifier['property'], isQualifier=True)
+        qualifier_claim = pywikibot.Claim(
+            site, qualifier['property'], isQualifier=True
+        )
         qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
         claim.addQualifier(qualifier_claim)
