@@ -1,0 +1,8 @@
+# See https://www.mediawiki.org/wiki/Manual:Pywikibot/user-config.py#ExampleBot_on_Wikidata for full docs
+
+family = 'wikidata'
+
+# Change 'test' to 'wikidata' to use www.wikidata.org
+mylang = 'test'
+
+usernames['wikidata']['*'] = 'PositionStatements Bot'
