@@ -25,3 +25,9 @@ Run the `position_statements.py` script, passing it the path to a TSV file of `Q
 ::
 
     $ pipenv run python position_statements.py example_statements.tsv
+
+If you want to add user attribution in the edit summary then you can specify a user name as an additional argument on the command line.
+
+::
+
+    $ pipenv run python position_statements.py example_statements.tsv 'Chris Mytton'
