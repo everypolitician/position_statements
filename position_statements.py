@@ -4,7 +4,9 @@ import re
 from pathlib import Path
 
 # Regular expressions copied from http://tinyurl.com/yb37xlu7
-item_re = re.compile('^[PQ]\d+$', re.IGNORECASE)
+item_or_property_re = re.compile('^[PQ]\d+$', re.IGNORECASE)
+item_re = re.compile('^Q\d+$', re.IGNORECASE)
+property_re = re.compile('^P\d+$', re.IGNORECASE)
 string_re = re.compile('^"(.*)"$', re.IGNORECASE)
 time_re = re.compile(
     '^([+-]{0,1})(\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)Z\/{0,1}(\d*)$',
@@ -24,7 +26,7 @@ def entity_type(value):
 def parse_value(value):
     value = value.strip()
 
-    m = item_re.match(value)
+    m = item_or_property_re.match(value)
     if m is not None:
         return {
             'type': 'wikibase-entityid',
@@ -50,6 +52,8 @@ def parse_value(value):
                 'precision': precision
             }
         }
+
+    sys.exit("Unrecognised value: {}".format(value))
 
 
 def expanded_datavalue(datavalue):
@@ -89,9 +93,6 @@ for statement in statements:
     parts = [s.strip() for s in statement.split("\t")]
     command['item'] = parts[0]
     command['property'] = parts[1]
-    # Validate
-    if command['property'] != 'P39':
-        sys.exit("Only P39 statements are supported currently. (Got {})".format(command['property']))
     command['datavalue'] = parse_value(parts[2])
     qualifiers = parts[3:]
     qualifier_pairs = list(zip(qualifiers[::2], qualifiers[1::2]))
@@ -99,13 +100,35 @@ for statement in statements:
     command['sources'] = []
     for p, v in qualifier_pairs:
         what = 'sources' if p.startswith('S') else 'qualifiers'
-        q = {'property': re.sub(r'^S', 'P', p), 'datavalue': parse_value(v)}
+        prop = re.sub(r'^S', 'P', p)
+        q = {'property': prop, 'datavalue': parse_value(v)}
         command[what].append(q)
-    # TODO: Validate that items start with Q and properties start with P
+
+    # Validate statements
+    m = item_re.match(command['item'])
+    if m is None:
+        sys.exit("Invalid item ID format: {}".format(command['item']))
+
+    if command['property'] != 'P39':
+        sys.exit("Only P39 statements are supported currently. (Got {})".format(command['property']))
+
+    if len(qualifiers) % 2 != 0:
+        sys.exit("Odd number of qualifier/source pairs detected: {}".format(qualifiers))
+
+    for qualifier in command['qualifiers']:
+        m = property_re.match(qualifier['property'])
+        if m is None:
+            sys.exit("Invalid qualifier property: {}".format(qualifier['property']))
+
+    for source in command['sources']:
+        m = property_re.match(source['property'])
+        if m is None:
+            sys.exit("Invalid source property: {}".format(source['property']))
+
+    # Validations passed, add to list of commands.
     commands.append(command)
 
 for command in commands:
-
     # Get the item we want to modify
     item = pywikibot.ItemPage(repo, command['item'])
     item.get()
