@@ -89,6 +89,9 @@ for statement in statements:
     parts = [s.strip() for s in statement.split("\t")]
     command['item'] = parts[0]
     command['property'] = parts[1]
+    # Validate
+    if command['property'] != 'P39':
+        sys.exit("Only P39 statements are supported currently. (Got {})".format(command['property']))
     command['datavalue'] = parse_value(parts[2])
     qualifiers = parts[3:]
     qualifier_pairs = list(zip(qualifiers[::2], qualifiers[1::2]))
@@ -102,9 +105,6 @@ for statement in statements:
     commands.append(command)
 
 for command in commands:
-    # Validate
-    if command['property'] != 'P39':
-        sys.exit("Only P39 statements are supported currently. (Got {})".format(command['property']))
 
     # Get the item we want to modify
     item = pywikibot.ItemPage(repo, command['item'])
