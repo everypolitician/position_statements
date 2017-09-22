@@ -102,6 +102,10 @@ for statement in statements:
     commands.append(command)
 
 for command in commands:
+    # Validate
+    if command['property'] != 'P39':
+        sys.exit("Only P39 statements are supported currently. (Got {})".format(command['property']))
+
     # Get the item we want to modify
     item = pywikibot.ItemPage(repo, command['item'])
     item.get()
