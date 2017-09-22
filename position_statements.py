@@ -70,12 +70,17 @@ def expanded_datavalue(datavalue):
 
 
 if len(sys.argv) == 1:
-    sys.exit("Usage: %s <filename>" % sys.argv[0])
+    sys.exit("Usage: %s <filename> [<user_for_attribution>]" % sys.argv[0])
 
 p = Path(sys.argv[1])
 
 if not p.is_file():
     sys.exit('"%s" is not a file' % sys.argv[1])
+
+try:
+    user_name = sys.argv[2]
+except IndexError:
+    user_name = None
 
 site = pywikibot.Site()
 repo = site.data_repository()
@@ -129,6 +134,10 @@ for statement in statements:
     commands.append(command)
 
 for command in commands:
+    summary = 'Edited with PositionStatements'
+    if user_name:
+        summary += ' on behalf of [[User:{}]]'.format('Chris Mytton')
+
     # Get the item we want to modify
     item = pywikibot.ItemPage(repo, command['item'])
     item.get()
@@ -140,18 +149,18 @@ for command in commands:
     claim.setTarget(expanded_datavalue(command['datavalue']))
 
     # Add the claim to the item.
-    item.addClaim(claim)
+    item.addClaim(claim, summary=summary)
 
     for qualifier in command['qualifiers']:
         qualifier_claim = pywikibot.Claim(
             site, qualifier['property'], isQualifier=True
         )
         qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
-        claim.addQualifier(qualifier_claim)
+        claim.addQualifier(qualifier_claim, summary=summary)
 
     for source in command['sources']:
         source_claim = pywikibot.Claim(
             site, source['property'], isReference=True
         )
         source_claim.setTarget(expanded_datavalue(source['datavalue']))
-        claim.addSource(source_claim)
+        claim.addSource(source_claim, summary=summary)
