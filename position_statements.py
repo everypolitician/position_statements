@@ -93,9 +93,11 @@ for statement in statements:
     qualifiers = parts[3:]
     qualifier_pairs = list(zip(qualifiers[::2], qualifiers[1::2]))
     command['qualifiers'] = []
+    command['sources'] = []
     for p, v in qualifier_pairs:
-        q = {'property': p, 'datavalue': parse_value(v)}
-        command['qualifiers'].append(q)
+        what = 'sources' if p.startswith('S') else 'qualifiers'
+        q = {'property': re.sub(r'^S', 'P', p), 'datavalue': parse_value(v)}
+        command[what].append(q)
     # TODO: Validate that items start with Q and properties start with P
     commands.append(command)
 
@@ -119,3 +121,10 @@ for command in commands:
         )
         qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
         claim.addQualifier(qualifier_claim)
+
+    for source in command['sources']:
+        source_claim = pywikibot.Claim(
+            site, source['property'], isReference=True
+        )
+        source_claim.setTarget(expanded_datavalue(source['datavalue']))
+        claim.addSource(source_claim)
