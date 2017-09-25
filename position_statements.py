@@ -136,7 +136,7 @@ for statement in statements:
 for command in commands:
     summary = 'Edited with PositionStatements'
     if user_name:
-        summary += ' on behalf of [[User:{}]]'.format('Chris Mytton')
+        summary += ' on behalf of [[User:{}]]'.format(user_name)
 
     # Get the item we want to modify
     item = pywikibot.ItemPage(repo, command['item'])
