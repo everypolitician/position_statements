@@ -1,6 +1,7 @@
 import pywikibot
 import sys
 import re
+import time
 from pathlib import Path
 
 # Regular expressions copied from http://tinyurl.com/yb37xlu7
@@ -134,6 +135,7 @@ for statement in statements:
     commands.append(command)
 
 for command in commands:
+    print(command)
     summary = 'Edited with PositionStatements'
     if user_name:
         summary += ' on behalf of [[User:{}]]'.format(user_name)
@@ -150,6 +152,8 @@ for command in commands:
 
     # Add the claim to the item.
     item.addClaim(claim, summary=summary)
+    print("Sleeping for 10 seconds")
+    time.sleep(10)
 
     for qualifier in command['qualifiers']:
         qualifier_claim = pywikibot.Claim(
@@ -157,6 +161,8 @@ for command in commands:
         )
         qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
         claim.addQualifier(qualifier_claim, summary=summary)
+        time.sleep(10)
+        print("Sleeping for 10 seconds")
 
     for source in command['sources']:
         source_claim = pywikibot.Claim(
@@ -164,3 +170,5 @@ for command in commands:
         )
         source_claim.setTarget(expanded_datavalue(source['datavalue']))
         claim.addSource(source_claim, summary=summary)
+        time.sleep(10)
+        print("Sleeping for 10 seconds")
