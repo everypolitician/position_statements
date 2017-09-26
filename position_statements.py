@@ -38,7 +38,7 @@ def parse_value(value):
 
     m = string_re.match(value)
     if m is not None:
-        return {'type': 'string', 'value': value}
+        return {'type': 'string', 'value': m.group(1).strip()}
 
     m = time_re.match(value)
     if m is not None:
