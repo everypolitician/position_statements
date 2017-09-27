@@ -161,14 +161,16 @@ for command in commands:
         )
         qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
         claim.addQualifier(qualifier_claim, summary=summary)
-        time.sleep(10)
         print("Sleeping for 10 seconds")
+        time.sleep(10)
 
+    sources = []
     for source in command['sources']:
         source_claim = pywikibot.Claim(
             site, source['property'], isReference=True
         )
         source_claim.setTarget(expanded_datavalue(source['datavalue']))
-        claim.addSource(source_claim, summary=summary)
-        time.sleep(10)
-        print("Sleeping for 10 seconds")
+        sources.append(source_claim)
+    claim.addSources(sources, summary=summary)
+    print("Sleeping for 10 seconds")
+    time.sleep(10)
