@@ -152,8 +152,6 @@ for command in commands:
 
     # Add the claim to the item.
     item.addClaim(claim, summary=summary)
-    print("Sleeping for 10 seconds")
-    time.sleep(10)
 
     for qualifier in command['qualifiers']:
         qualifier_claim = pywikibot.Claim(
@@ -161,8 +159,6 @@ for command in commands:
         )
         qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
         claim.addQualifier(qualifier_claim, summary=summary)
-        print("Sleeping for 10 seconds")
-        time.sleep(10)
 
     sources = []
     for source in command['sources']:
@@ -172,5 +168,3 @@ for command in commands:
         source_claim.setTarget(expanded_datavalue(source['datavalue']))
         sources.append(source_claim)
     claim.addSources(sources, summary=summary)
-    print("Sleeping for 10 seconds")
-    time.sleep(10)
