@@ -60,7 +60,10 @@ def parse_value(value):
 def expanded_datavalue(datavalue):
     if datavalue['type'] == 'wikibase-entityid':
         entity = pywikibot.ItemPage(repo, datavalue['value']['id'])
-        entity.get()
+        try:
+            entity.get()
+        except pywikibot.IsRedirectPage:
+            entity = entity.getRedirectTarget()
         return entity
     elif datavalue['type'] == 'string':
         return datavalue['value']
@@ -142,7 +145,10 @@ for command in commands:
 
     # Get the item we want to modify
     item = pywikibot.ItemPage(repo, command['item'])
-    item.get()
+    try:
+        item.get()
+    except pywikibot.IsRedirectPage:
+        item = item.getRedirectTarget()
 
     # Get the claim we're dealing with
     claim = pywikibot.Claim(site, command['property'])
