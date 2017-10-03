@@ -80,6 +80,23 @@ def expanded_datavalue(datavalue):
         time.precision = datavalue['value']['precision']
         return time
 
+
+def get_existing_claim(item, property_id, statement_uuid):
+    if property_id not in item.claims:
+        raise Exception('No property {} found in claims of {}'.format(
+            property_id, item
+        ))
+    for claim in item.claims[property_id]:
+        if claim.snak == statement_uuid:
+            return claim
+    msg = 'The snak {statement_uuid} was not found for any claim on ' \
+          '\'{item}\' with property {property_id}'
+    raise Exception(msg.format(
+        statement_uuid=statement_uuid,
+        item=item,
+        property_id=property_id,
+    ))
+
 if __name__ == '__main__':
 
     if len(sys.argv) == 1:
@@ -159,14 +176,21 @@ if __name__ == '__main__':
         except pywikibot.IsRedirectPage:
             item = item.getRedirectTarget()
 
-        # Get the claim we're dealing with
-        claim = pywikibot.Claim(site, command['property'])
+        if command['datavalue']['type'] == 'x-wikidata-statementid':
+            claim = get_existing_claim(
+                item,
+                command['property'],
+                command['datavalue']['value'],
+            )
+        else:
+            # Get the claim we're dealing with
+            claim = pywikibot.Claim(site, command['property'])
 
-        # Create a new P39 statement pointing to Q123
-        claim.setTarget(expanded_datavalue(command['datavalue']))
+            # Create a new P39 statement pointing to Q123
+            claim.setTarget(expanded_datavalue(command['datavalue']))
 
-        # Add the claim to the item.
-        item.addClaim(claim, summary=summary)
+            # Add the claim to the item.
+            item.addClaim(claim, summary=summary)
 
         for qualifier in command['qualifiers']:
             qualifier_claim = pywikibot.Claim(
