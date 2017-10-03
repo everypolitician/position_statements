@@ -13,7 +13,8 @@ time_re = re.compile(
     '^([+-]{0,1})(\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)Z\/{0,1}(\d*)$',
     re.IGNORECASE
 )
-
+uuid_re = r'(?P<uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\Z'
+statement_re = re.compile(r'(wds:)?(?P<q>Q\d+)[-\$]' + uuid_re, re.I)
 
 def entity_type(value):
     if value.startswith('Q'):
@@ -52,6 +53,13 @@ def parse_value(value):
                 'time': re.sub(r'\/\d+$', '', value),
                 'precision': precision
             }
+        }
+
+    m = statement_re.match(value)
+    if m:
+        return {
+            'type': 'x-wikidata-statementid',
+            'value': m.group('q') + '$' + m.group('uuid')
         }
 
     sys.exit("Unrecognised value: {}".format(value))

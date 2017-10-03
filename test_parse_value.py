@@ -22,3 +22,21 @@ def test_parse_value_time():
             'precision': 11
         }
     }
+
+def test_parse_value_statement_raw_uuid():
+    assert parse_value('Q42-DD45AFB0-7249-4690-AAE3-86C9FF996CE2') == {
+        'type': 'x-wikidata-statementid',
+        'value': 'Q42$DD45AFB0-7249-4690-AAE3-86C9FF996CE2',
+    }
+
+def test_parse_value_statement_api_uuid():
+    assert parse_value('Q42$DD45AFB0-7249-4690-AAE3-86C9FF996CE2') == {
+        'type': 'x-wikidata-statementid',
+        'value': 'Q42$DD45AFB0-7249-4690-AAE3-86C9FF996CE2',
+     }
+
+def test_parse_value_statement_wds_uuid():
+    assert parse_value('wds:Q42-DD45AFB0-7249-4690-AAE3-86C9FF996CE2') == {
+        'type': 'x-wikidata-statementid',
+        'value': 'Q42$DD45AFB0-7249-4690-AAE3-86C9FF996CE2',
+    }
