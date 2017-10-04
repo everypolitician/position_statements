@@ -1,3 +1,4 @@
+import json
 import pywikibot
 import sys
 import re
@@ -164,7 +165,7 @@ if __name__ == '__main__':
         commands.append(command)
 
     for command in commands:
-        print(command)
+        print(json.dumps(command, indent=4, sort_keys=True))
         summary = 'Edited with PositionStatements'
         if user_name:
             summary += ' on behalf of [[User:{}]]'.format(user_name)
