@@ -206,4 +206,5 @@ if __name__ == '__main__':
             )
             source_claim.setTarget(expanded_datavalue(source['datavalue']))
             sources.append(source_claim)
-        claim.addSources(sources, summary=summary)
+        if sources:
+            claim.addSources(sources, summary=summary)
