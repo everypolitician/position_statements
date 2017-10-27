@@ -8,7 +8,7 @@ from pathlib import Path
 # Regular expressions copied from http://tinyurl.com/yb37xlu7
 item_or_property_re = re.compile('^[PQ]\d+$', re.IGNORECASE)
 item_re = re.compile('^Q\d+$', re.IGNORECASE)
-property_re = re.compile('^P\d+$', re.IGNORECASE)
+property_re = re.compile('^-?P\d+$', re.IGNORECASE)
 string_re = re.compile('^"(.*)"$', re.IGNORECASE)
 time_re = re.compile(
     '^([+-]{0,1})(\d+)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)Z\/{0,1}(\d*)$',
@@ -194,11 +194,31 @@ if __name__ == '__main__':
             item.addClaim(claim, summary=summary)
 
         for qualifier in command['qualifiers']:
-            qualifier_claim = pywikibot.Claim(
-                site, qualifier['property'], isQualifier=True
-            )
-            qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
-            claim.addQualifier(qualifier_claim, summary=summary)
+
+            # Check to see if this is actually a remove
+            if qualifier['property'][:1] == '-':
+
+                qualifier['property'] = qualifier['property'][1:]
+
+                # We don't use has_qualifier here because that only returns a
+                # bool, not the qualifier itself, so we'd still have to go find
+                # it in order to remove it.
+
+                for property_id, claim_qualifiers in claim.qualifiers.items():
+                    if property_id == qualifier['property']:
+                        # Now unpack the list...
+                        for single_qualifier in claim_qualifiers:
+                            if single_qualifier.getTarget() == expanded_datavalue(qualifier['datavalue']):
+                                claim.removeQualifier(single_qualifier)
+
+            else:
+
+                qualifier_claim = pywikibot.Claim(
+                    site, qualifier['property'], isQualifier=True
+                )
+                qualifier_claim.setTarget(expanded_datavalue(qualifier['datavalue']))
+
+                claim.addQualifier(qualifier_claim, summary=summary)
 
         sources = []
         for source in command['sources']:
